@@ -4,10 +4,12 @@
 import { ModuleManager } from './module/moduleManager.js';
 import { setupConfig } from './config/manager.js';
 import { registerEvents } from './events.js';
+import { hook } from './hooks.js';
 
 
 
 
+hook();
 // --- 2. CLIENT INITIALIZATION LOGIC ---
 // This function will be called by the hook once the game is ready.
 function startImpactClient() {
