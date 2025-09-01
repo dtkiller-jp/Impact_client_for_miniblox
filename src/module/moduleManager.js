@@ -1,6 +1,8 @@
+
 // Module management system for Impact Moduled
 import { Module } from './module.js';
 
+// Import all modules
 import { AutoClicker } from './modules/combat/AutoClicker.js';
 import { Killaura } from './modules/combat/Killaura.js';
 import { Velocity } from './modules/combat/Velocity.js';
@@ -51,9 +53,25 @@ import { Tokeniser } from './modules/misc/Tokeniser.js';
 export class ModuleManager {
     constructor() {
         this.modules = [];
+        this.setupKeybindListener();
     }
+
+    setupKeybindListener() {
+        document.addEventListener('keydown', (e) => {
+            // Don't toggle modules if user is typing in a chat or any other input field
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            for (const module of this.modules) {
+                if (module.bind && module.bind.toLowerCase() === e.key.toLowerCase()) {
+                    module.toggle();
+                }
+            }
+        });
+    }
+
     loadModules() {
-        window.enabledModules = window.enabledModules || {};
         // combat
         this.register(new AutoClicker());
         this.register(new Killaura());
@@ -103,17 +121,55 @@ export class ModuleManager {
         this.register(new FastBreak());
         this.register(new AntiCheat());
         this.register(new Tokeniser());
-        // Reflect existing flags
-        this.modules.forEach(m => { if (window.enabledModules[m.name]) { if (!m.enabled) m.toggle(); } else { window.enabledModules[m.name] = m.enabled; } });
+
         window.getModule = (name) => this.getModule(name);
     }
+
     register(module) {
         this.modules.push(module);
     }
-    getModule(name) {
-        return this.modules.find(m => m.name === name);
+
+    onTick() {
+        for (const module of this.modules) {
+            if (module.enabled && typeof module.onTick === 'function') {
+                try {
+                    module.onTick();
+                } catch (e) {
+                    console.error(`Error in module ${module.name}'s onTick:`, e);
+                }
+            }
+        }
     }
+
+    onPacketSend(event) {
+        for (const module of this.modules) {
+            if (module.enabled && typeof module.onPacketSend === 'function') {
+                try {
+                    module.onPacketSend(event);
+                } catch (e) {
+                    console.error(`Error in module ${module.name}'s onPacketSend:`, e);
+                }
+            }
+        }
+    }
+
+    onPacketReceive(event) {
+        for (const module of this.modules) {
+            if (module.enabled && typeof module.onPacketReceive === 'function') {
+                try {
+                    module.onPacketReceive(event);
+                } catch (e) {
+                    console.error(`Error in module ${module.name}'s onPacketReceive:`, e);
+                }
+            }
+        }
+    }
+
+    getModule(name) {
+        return this.modules.find(m => m.name.toLowerCase() === name.toLowerCase());
+    }
+
     getModulesByCategory(category) {
-        return this.modules.filter(m => m.category === category);
+        return this.modules.filter(m => m.category.toLowerCase() === category.toLowerCase());
     }
 }

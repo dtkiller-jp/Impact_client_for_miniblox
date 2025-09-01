@@ -1,92 +1,71 @@
-// Impact Moduled for MiniBlox
-// Entry point
-
 import { ModuleManager } from './module/moduleManager.js';
-import { setupConfig } from './config/manager.js';
+import { setupConfig, saveConfig } from './config/manager.js';
 import { registerEvents } from './events.js';
 import { hook } from './hooks.js';
 
-
-
-
+// 1. Set up the hooks immediately. This must run before the game code.
 hook();
-// --- 2. CLIENT INITIALIZATION LOGIC ---
-// This function will be called by the hook once the game is ready.
-function startImpactClient() {
-    if (window.impactClientInitialized) {
-        return; // Prevent double initialization
-    }
-    window.impactClientInitialized = true;
 
-    console.log("[Impact] Starting client initialization...");
-
-    /**
-     * This function acts as a bridge to send module state updates 
-     * from the GUI to the script injected into the game's context.
-     * @param {Module} module - The module that was updated.
-     */
-    function postModuleUpdate(module) {
-        // The payload contains all the necessary info for the in-game script to update a module's state.
-        const payload = {
-            name: module.name,
-            enabled: module.enabled,
-            options: Object.fromEntries(Object.entries(module.options).map(([k, v]) => [k, v.value]))
-        };
-
-        window.postMessage({ type: 'impactModuledUpdate', payload }, '*');
+// 2. Main client class
+class ImpactClient {
+    constructor() {
+        this.moduleManager = new ModuleManager();
+        window.moduleManager = this.moduleManager; // Expose for GUI and debugging
+        this.initialized = false;
     }
 
-    // Initialize configuration (e.g., load saved settings).
-    setupConfig();
+    start() {
+        console.log("[Impact] Game is ready. Starting client initialization...");
 
-    // Register basic DOM events (like the global error handler).
-    registerEvents();
+        // Load saved settings from config
+        setupConfig(this.moduleManager);
 
-    // Initialize the module manager. This loads all module classes from the files
-    // so they can be displayed in the ClickGUI.
-    window.moduleManager = new ModuleManager();
-    window.moduleManager.loadModules();
+        // Register non-game-related events (e.g., error handlers)
+        registerEvents();
 
-    // Set up the communication bridge.
-    window.moduleManager.modules.forEach(module => {
-        // Wrap the toggle function
-        const originalToggle = module.toggle;
-        module.toggle = function() {
-            originalToggle.apply(this, arguments);
-            postModuleUpdate(this);
-        };
+        // Load all module classes
+        this.moduleManager.loadModules();
 
-        // Wrap the options change handler
-        const originalOptionsChanged = module.onOptionsChanged;
-        module.onOptionsChanged = function() {
-            if (originalOptionsChanged) {
-                originalOptionsChanged.apply(this, arguments);
-            }
-            postModuleUpdate(this);
-        };
-    });
+        // Set up event listeners to bridge hooks to the module manager
+        this.setupEventListeners();
+        
+        // Save config periodically
+        setInterval(() => {
+            saveConfig(this.moduleManager);
+        }, 10000);
 
-    // --- Game Tick Loop ---
-    // This function will be called by the code injected by hooks.js on every game tick.
-    window.ImpactClientTick = function() {
-        if (!window.moduleManager || !window.moduleManager.modules) return;
+        this.initialized = true;
+        window.impactClientInitialized = true;
+        console.log("[Impact] Client initialized successfully!");
+        console.log("[Impact] Press Right Arrow to open ClickGUI.");
+    }
 
-        for (const module of window.moduleManager.modules) {
-            if (module.enabled && typeof module.onTick === 'function') {
-                try {
-                    module.onTick();
-                } catch (e) {
-                    console.error(`Error in module ${module.name}'s onTick:`, e);
-                }
-            }
-        }
-    };
+    setupEventListeners() {
+        document.addEventListener('impact-tick', () => {
+            if (!this.initialized) return;
+            this.moduleManager.onTick();
+        });
 
-    // --- FINALIZATION ---
-    window.impactModuledLoaded = true;
-    console.log('Impact Moduled Client loaded successfully!');
-    console.log('Press Right Arrow to open ClickGUI');
+        document.addEventListener('impact-packet-send', (event) => {
+            if (!this.initialized) return;
+            this.moduleManager.onPacketSend(event);
+        });
+
+        document.addEventListener('impact-packet-receive', (event) => {
+            if (!this.initialized) return;
+            this.moduleManager.onPacketReceive(event);
+        });
+    }
 }
 
-// Expose the client initializer to the window context so the hook can call it.
-window.startImpactClient = startImpactClient;
+// 3. Initialization logic
+// Wait for the hooks to tell us the game is ready.
+document.addEventListener('impact-game-ready', (event) => {
+    // Expose game objects globally for modules to use
+    window.player = event.detail.player;
+    window.game = event.detail.game;
+
+    // Initialize the client
+    const client = new ImpactClient();
+    client.start();
+});
