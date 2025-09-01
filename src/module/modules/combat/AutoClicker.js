@@ -4,65 +4,66 @@ export class AutoClicker extends Module {
 	constructor() {
 		super('AutoClicker', 'combat');
 		this.addOption('cps', 16);
-		this.addOption('leftClick', true);
-		this.addOption('rightClick', false);
-		this.addOption('randomize', true);
-		this.interval = null;
-		this.lastClickTime = 0;
+		this.addOption('onlyWeapon', true);
+		this.clickInterval = null;
+		this.clicking = false;
 	}
 
 	onEnable() {
-		console.log(`[${this.name}] AutoClicker enabled with ${this.options['cps'].value} CPS`);
 		this.startClicking();
 	}
 
 	onDisable() {
-		console.log(`[${this.name}] AutoClicker disabled`);
 		this.stopClicking();
 	}
 
 	startClicking() {
-		const cps = this.options['cps'].value;
-		const interval = 1000 / cps;
-		
-		this.interval = setInterval(() => {
-			if (this.options['leftClick'].value) {
-				this.simulateClick('left');
+		if (this.clickInterval) return;
+
+		const click = () => {
+			if (this.clicking) {
+				this.doClick('left');
 			}
-			if (this.options['rightClick'].value) {
-				this.simulateClick('right');
-			}
-		}, interval);
+		};
+
+		this.clickInterval = setInterval(click, 1000 / this.options.cps.value);
+
+		document.addEventListener('mousedown', this.handleMouseDown);
+		document.addEventListener('mouseup', this.handleMouseUp);
 	}
 
 	stopClicking() {
-		if (this.interval) {
-			clearInterval(this.interval);
-			this.interval = null;
+		if (this.clickInterval) {
+			clearInterval(this.clickInterval);
+			this.clickInterval = null;
 		}
+		document.removeEventListener('mousedown', this.handleMouseDown);
+		document.removeEventListener('mouseup', this.handleMouseUp);
 	}
 
-	simulateClick(button) {
-		const now = Date.now();
-		if (now - this.lastClickTime < 50) return; // 最小間隔
+	handleMouseDown = (e) => {
+		if (e.button === 0) { // Left click
+			this.clicking = true;
+		}
+	};
 
+	handleMouseUp = (e) => {
+		if (e.button === 0) {
+			this.clicking = false;
+		}
+	};
+
+	doClick(button) {
 		try {
-			// マウスクリックイベントをシミュレート
 			const event = new MouseEvent('mousedown', {
 				button: button === 'left' ? 0 : 2,
 				bubbles: true,
 				cancelable: true,
 				view: window
 			});
-			
-			document.dispatchEvent(event);
-			this.lastClickTime = now;
-		} catch (error) {
-			console.error(`[${this.name}] Error simulating click:`, error);
+			dispatchEvent(event);
+		} catch (e) {
+			console.error("Failed to dispatch click event", e);
 		}
-	}
-
-	onTick() {
-		// ゲームティックでの処理
 	}
 }
