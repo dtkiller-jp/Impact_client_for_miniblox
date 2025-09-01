@@ -41,17 +41,17 @@ class ImpactClient {
 
     setupEventListeners() {
         document.addEventListener('impact-tick', (e) => {
-            if (!this.initialized) return;
+            if (!this.initialized || !this.moduleManager) return;
             this.moduleManager.onTick(e);
         });
 
         document.addEventListener('impact-packet-send', (e) => {
-            if (!this.initialized) return;
+            if (!this.initialized || !this.moduleManager) return;
             this.moduleManager.onPacketSend(e);
         });
 
         document.addEventListener('impact-packet-receive', (e) => {
-            if (!this.initialized) return;
+            if (!this.initialized || !this.moduleManager) return;
             this.moduleManager.onPacketReceive(e);
         });
     }

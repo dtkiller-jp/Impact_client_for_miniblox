@@ -1,6 +1,6 @@
 import { Module } from '../../module.js';
 
-export class AutoClicker extends Module {
+class AutoClicker extends Module {
 	constructor() {
 		super('AutoClicker', 'combat');
 		this.addOption('cps', 16);
