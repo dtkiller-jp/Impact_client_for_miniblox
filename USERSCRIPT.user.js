@@ -7,11 +7,11 @@
 // @match        https://miniblox.io/*
 // @match        https://miniblox.org/*
 // @match        https://miniblox.online/*
-// @match        https://blockcraft.online/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=miniblox.io
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        unsafeWindow
-// @require      https://raw.githubusercontent.com/dtkiller-jp/Impact_client_for_miniblox/refs/heads/main/build/impactmoduled.min.js
+// @require      https://codeberg.org/dtkiller_jp/impact_client_for_miniblox_DEV/raw/branch/main/test/pre-hook.min.js
+// @require      https://codeberg.org/dtkiller_jp/impact_client_for_miniblox_DEV/raw/branch/main/test/impactmoduled.min.js
 // @run-at       document-start
 // ==/UserScript==

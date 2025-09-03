@@ -1,12 +1,35 @@
 
 import { ModuleManager } from './module/moduleManager.js';
-import { hook } from './hooks.js';
-import { setupConfig, saveConfig } from './config/manager.js';
+import { setupConfig } from './config/manager.js';
+import { registerEvents } from './events.js';
 
-class ImpactClient {
-    constructor() {
-        this.moduleManager = null;
-        this.initialized = false;
+
+
+
+// --- 2. CLIENT INITIALIZATION LOGIC ---
+// This function will be called by the hook once the game is ready.
+function startImpactClient() {
+    if (window.impactClientInitialized) {
+        return; // Prevent double initialization
+    }
+    window.impactClientInitialized = true;
+
+    console.log("[Impact] Starting client initialization...");
+
+    /**
+     * This function acts as a bridge to send module state updates 
+     * from the GUI to the script injected into the game's context.
+     * @param {Module} module - The module that was updated.
+     */
+    function postModuleUpdate(module) {
+        // The payload contains all the necessary info for the in-game script to update a module's state.
+        const payload = {
+            name: module.name,
+            enabled: module.enabled,
+            options: Object.fromEntries(Object.entries(module.options).map(([k, v]) => [k, v.value]))
+        };
+
+        window.postMessage({ type: 'impactModuledUpdate', payload }, '*');
     }
 
     initialize() {
