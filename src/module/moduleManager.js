@@ -1,7 +1,51 @@
-// This ModuleManager will be executed in the injected scope.
-// It assumes all module classes are already defined in the same scope.
+import { AutoClicker } from './modules/combat/AutoClicker.js';
+import { Killaura } from './modules/combat/Killaura.js';
+import { Velocity } from './modules/combat/Velocity.js';
+import { WTap } from './modules/combat/WTap.js';
+import { Speed } from './modules/movement/Speed.js';
+import { Step } from './modules/movement/Step.js';
+import { InfiniteFly } from './modules/movement/InfiniteFly.js';
+import { KeepSprint } from './modules/movement/KeepSprint.js';
+import { NoSlowdown } from './modules/movement/NoSlowdown.js';
+import { Phase } from './modules/movement/Phase.js';
+import { AntiFall } from './modules/movement/AntiFall.js';
+import { InvWalk } from './modules/movement/InvWalk.js';
+import { Jesus } from './modules/movement/Jesus.js';
+import { Fly } from './modules/movement/Fly.js';
+import { JumpFly } from './modules/movement/JumpFly.js';
+import { NoFall } from './modules/movement/NoFall.js';
+import { Scaffold } from './modules/movement/Scaffold.js';
+import { Chams } from './modules/visual/Chams.js';
+import { PlayerESP } from './modules/visual/PlayerESP.js';
+import { TextGUI } from './modules/visual/TextGUI.js';
+import { NametagsPlus } from './modules/visual/NametagsPlus.js';
+import { ClickGUI } from './modules/visual/ClickGUI.js';
+import { Keystrokes } from './modules/visual/Keystrokes.js';
+import { FPSCounter } from './modules/visual/FPSCounter.js';
+import { CPSCounter } from './modules/visual/CPSCounter.js';
+import { TestMusicPlayer } from './modules/visual/TestMusicPlayer.js';
+import { AutoRespawn } from './modules/misc/AutoRespawn.js';
+import { AutoRejoin } from './modules/misc/AutoRejoin.js';
+import { AutoQueue } from './modules/misc/AutoQueue.js';
+import { AutoVote } from './modules/misc/AutoVote.js';
+import { InvCleaner } from './modules/misc/InvCleaner.js';
+import { ChestSteal } from './modules/misc/ChestSteal.js';
+import { AntiBan } from './modules/misc/AntiBan.js';
+import { ChatDisabler } from './modules/misc/ChatDisabler.js';
+import { FilterBypass } from './modules/misc/FilterBypass.js';
+import { AutoFunnyChat } from './modules/misc/AutoFunnyChat.js';
+import { Timer } from './modules/misc/Timer.js';
+import { Breaker } from './modules/misc/Breaker.js';
+import { AutoArmor } from './modules/misc/AutoArmor.js';
+import { AutoCraft } from './modules/misc/AutoCraft.js';
+import { GhostJoin } from './modules/misc/GhostJoin.js';
+import { StreamerMode } from './modules/misc/StreamerMode.js';
+import { FastBreak } from './modules/misc/FastBreak.js';
+import { AntiCheat } from './modules/misc/AntiCheat.js';
+import { Tokeniser } from './modules/misc/Tokeniser.js';
 
-class ModuleManager {
+
+export class ModuleManager {
     constructor() {
         this.modules = [];
         this.setupKeybindListener();

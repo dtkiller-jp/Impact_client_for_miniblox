@@ -3,7 +3,6 @@ const path = require("path");
 module.exports = {
     mode: "production",
     entry: {
-        'pre-hook': './src/pre-hook.js',
         'impactmoduled': './src/main.js'
     },
     output: {

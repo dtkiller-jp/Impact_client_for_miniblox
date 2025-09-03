@@ -16,7 +16,7 @@ export class Breaker extends Module {
 				const bx = px+x, by = py+y, bz = pz+z;
 				if (!game.world?.isBreakable?.(bx,by,bz)) continue;
 				window.playerController?.breakBlock?.(bx,by,bz);
-				return; // 一度に1ブロチE��
+				return; // 一度に1ブロチE��
 			}
 		} catch {}
 	}

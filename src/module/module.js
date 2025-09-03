@@ -1,5 +1,5 @@
 // Base Module class for Impact Moduled
-class Module {
+export class Module {
 	constructor(name, category) {
 		this.name = name;
 		this.category = category; // e.g., 'combat', 'movement', 'visual', 'misc'
