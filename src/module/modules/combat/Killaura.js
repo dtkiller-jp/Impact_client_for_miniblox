@@ -1,12 +1,23 @@
 import { Module } from '../../module.js';
 
-// This class is now only responsible for defining the module for the GUI.
-// The actual game logic is handled entirely by the code injected in hooks.js.
 export class Killaura extends Module {
-	constructor() {
-		super('Killaura', 'combat');
-		// These options are automatically sent to the injected script when changed.
-		this.addOption('Range', 9);
-		this.addOption('Angle', 360);
-	}
+    constructor() {
+        super('Killaura', 'Combat');
+        this.addOption('cps', 12);
+        this.addOption('range', 4);
+    }
+
+    onTick() {
+        if (this.enabled && Date.now() > window.impactVars.attackTime) {
+            for (const entity of Object.values(entities)) {
+                if (entity != player && entity.isEntityPlayer() && entity.health > 0 && entity.getDistanceToEntity(player) < this.options.range.value) {
+                    const angle = getAngles(entity);
+                    window.impactVars.sendYaw = angle.yaw;
+                    player.attack(entity);
+                    window.impactVars.attackTime = Date.now() + (1000 / this.options.cps.value);
+                    break;
+                }
+            }
+        }
+    }
 }

@@ -162,12 +162,27 @@ window.startImpactClient = () => {
 			document.dispatchEvent(DOMContentLoaded_event);
 		}, 0);
 	`);
-	addModification('y:this.getEntityBoundingBox().min.y,', 'y:sendY != false ? sendY : this.getEntityBoundingBox().min.y,', true);
+	addModification('y:this.getEntityBoundingBox().min.y,', 'y:window.impactVars.sendY != false ? window.impactVars.sendY : this.getEntityBoundingBox().min.y,', true);
 	addModification('Potions.jump.getId(),"5");', `
         window.impactEvent = new EventTarget();
-		let blocking = false; let sendYaw = false; let sendY = false; let breakStart = Date.now(); let noMove = Date.now();
-		let lastJoined, velocityhori, velocityvert, chatdisablermsg, textguifont, textguisize, textguishadow, attackedEntity, stepheight;
-		let attackTime = Date.now(); let chatDelay = Date.now();
+        window.impactVars = {
+            blocking: false,
+            sendYaw: false,
+            sendY: false,
+            breakStart: Date.now(),
+            noMove: Date.now(),
+            lastJoined: undefined,
+            velocityhori: 100,
+            velocityvert: 100,
+            chatdisablermsg: "get rekt",
+            textguifont: "Arial",
+            textguisize: 10,
+            textguishadow: true,
+            attackedEntity: null,
+            stepheight: 0.6,
+            attackTime: Date.now(),
+            chatDelay: Date.now()
+        };
 	`);
 
 	addModification('VERSION$1," | ",', `"${vapeName} v${VERSION}"," | ",`);
@@ -183,7 +198,7 @@ window.startImpactClient = () => {
 		async loadSpritesheet(){
 	`, true);
 	addModification('player.setPositionAndRotation(h.x,h.y,h.z,h.yaw,h.pitch),', `
-		noMove = Date.now() + 500;
+		window.impactVars.noMove = Date.now() + 500;
 		player.setPositionAndRotation(h.x,h.y,h.z,h.yaw,h.pitch),
 	`, true);
 	addModification('COLOR_TOOLTIP_BG,BORDER_SIZE)}', `
@@ -210,15 +225,17 @@ window.startImpactClient = () => {
 	addModification('this.game.unleash.isEnabled("disable-ads")', 'true', true);
 	addModification('h.render()})', '; window.impactEvent.dispatchEvent(new CustomEvent(\'render\'));');
 	addModification('updateNameTag(){let h="white",p=1;', 'this.entity.team = this.entity.profile.cosmetics.color;');
-	addModification('connect(u,h=!1,p=!1){', 'lastJoined = u;');
+	addModification('connect(u,h=!1,p=!1){', 'window.impactVars.lastJoined = u;');
 	addModification('SliderOption("Render Distance ",2,8,3)', 'SliderOption("Render Distance ",2,64,3)', true);
-	addModification('ClientSocket.on("CPacketDisconnect",h=>{', `if (window.moduleManager?.getModule("AutoRejoin")?.enabled) { setTimeout(function() { j.connect(lastJoined); }, 400); }`);
+	addModification('ClientSocket.on("CPacketDisconnect",h=>{', `if (window.moduleManager?.getModule("AutoRejoin")?.enabled) { setTimeout(function() { j.connect(window.impactVars.lastJoined); }, 400); }`);
 	addModification('ClientSocket.on("CPacketMessage",h=>{', `
-		if (player && h.text && !h.text.startsWith(player.name) && window.moduleManager?.getModule("ChatDisabler")?.enabled && chatDelay < Date.now()) {
-			chatDelay = Date.now() + 1000;
-			setTimeout(function() { ClientSocket.sendPacket(new SPacketMessage({text: Math.random() + ("\\n" + chatdisablermsg[1]).repeat(20)})); }, 50);
+        const chatDisablerModule = window.moduleManager?.getModule("ChatDisabler");
+		if (player && h.text && !h.text.startsWith(player.name) && chatDisablerModule?.enabled && window.impactVars.chatDelay < Date.now()) {
+			window.impactVars.chatDelay = Date.now() + 1000;
+            const msg = chatDisablerModule.options.message.value;
+			setTimeout(function() { ClientSocket.sendPacket(new SPacketMessage({text: Math.random() + ("\\n" + msg).repeat(20)})); }, 50);
 		}
-		if (h.text && h.text.startsWith("\\\\bold\\\\How to play:")) { breakStart = Date.now() + 25000; }
+		if (h.text && h.text.startsWith("\\\\bold\\\\How to play:")) { window.impactVars.breakStart = Date.now() + 25000; }
 		if (h.text && h.text.indexOf("Poll started") != -1 && h.id == undefined && window.moduleManager?.getModule("AutoVote")?.enabled) { ClientSocket.sendPacket(new SPacketMessage({text: "/vote 2"})); }
 		if (h.text && h.text.indexOf("won the game") != -1 && h.id == undefined && window.moduleManager?.getModule("AutoQueue")?.enabled) { game.requestQueue(); }
 	`);
@@ -234,8 +251,7 @@ window.startImpactClient = () => {
 	addModification('const m=player.openContainer', `const m = player.openContainer ?? { getLowerChestInventory: () => {getSizeInventory: () => 0} }`, true);
     addModification('document.addEventListener("contextmenu",m=>m.preventDefault());', `
         if (typeof window.startImpactClient === 'function') {
-            console.log('[Impact Patcher] Starting client...');
-            setTimeout(window.startImpactClient, 0);
+            console.log('[Impact Patcher] Client start function not found!');
         } else {
             console.error('[Impact Patcher] Client start function not found!');
         }
