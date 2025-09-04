@@ -43,6 +43,7 @@ import { StreamerMode } from './modules/misc/StreamerMode.js';
 import { FastBreak } from './modules/misc/FastBreak.js';
 import { AntiCheat } from './modules/misc/AntiCheat.js';
 import { Tokeniser } from './modules/misc/Tokeniser.js';
+import { TestModule } from './modules/misc/TestModule.js';
 
 
 export class ModuleManager {
@@ -113,6 +114,7 @@ export class ModuleManager {
         this.register(new FastBreak());
         this.register(new AntiCheat());
         this.register(new Tokeniser());
+        this.register(new TestModule());
 
         window.getModule = (name) => this.getModule(name);
         // Load config after modules are registered
